@@ -10,28 +10,33 @@ import CryptoKit
 import Security
 
 class KeychainHelper {
-    static let keychainService = "com.sharad.Simply-Notes"
     static let encryptionKeyKey = "vault_encryption_key"
 
     static func saveEncryptionKey(_ key: SymmetricKey) {
-        let tag = encryptionKeyKey
+        let tag = Data(encryptionKeyKey.utf8)
         let keyData = key.withUnsafeBytes { Data($0) }
 
         let query: [String: Any] = [
             kSecClass as String: kSecClassKey,
             kSecAttrApplicationTag as String: tag,
-            kSecValueData as String: keyData,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+            kSecValueData as String: keyData
         ]
 
+        // Clean up before adding
         SecItemDelete(query as CFDictionary)
-        SecItemAdd(query as CFDictionary, nil)
+        let status = SecItemAdd(query as CFDictionary, nil)
+
+        if status != errSecSuccess {
+            print("🔐 Keychain save error: \(status)")
+        }
     }
 
     static func loadEncryptionKey() -> SymmetricKey? {
+        let tag = Data(encryptionKeyKey.utf8)
         let query: [String: Any] = [
             kSecClass as String: kSecClassKey,
-            kSecAttrApplicationTag as String: encryptionKeyKey,
+            kSecAttrApplicationTag as String: tag,
             kSecReturnData as String: true,
             kSecMatchLimit as String: kSecMatchLimitOne
         ]
@@ -39,8 +44,12 @@ class KeychainHelper {
         var result: CFTypeRef?
         let status = SecItemCopyMatching(query as CFDictionary, &result)
 
-        guard status == errSecSuccess,
-              let data = result as? Data else {
+        if status != errSecSuccess {
+            print("🔐 Keychain load error: \(status)")
+            return nil
+        }
+
+        guard let data = result as? Data else {
             return nil
         }
 
