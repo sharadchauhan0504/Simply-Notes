@@ -25,6 +25,7 @@ class LocalVaultStore {
             let stringData = String(decoding: jsonData, as: UTF8.self)
             let encrypted = try AESCrypto.encrypt(stringData, encryptedKey)
             try encrypted.write(to: fileURL)
+            print("Note saved")
         } catch {
             print("Vault save error: \(error)")
         }
@@ -35,7 +36,9 @@ class LocalVaultStore {
             let encypted = try Data(contentsOf: fileURL)
             let decrypted = try AESCrypto.decrypt(encypted, encryptedKey)
             let data = Data(decrypted.utf8)
-            return try JSONDecoder().decode([VaultNote].self, from: data)
+            let notes = try JSONDecoder().decode([VaultNote].self, from: data)
+            print("Loaded: \(notes)")
+            return notes
         } catch {
             print("Vault load error: \(error)")
             return []
