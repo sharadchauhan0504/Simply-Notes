@@ -23,9 +23,13 @@ struct Simply_NotesTests {
         vectorSearch.index(note.id, note.content)
 
         // Query search
-        let results = vectorSearch.search("banking payment icici")
-        print("results: \(results)")
-        assert(!results.isEmpty)
+        let results1 = vectorSearch.search("banking payment icici")
+        print("results1: \(results1)")
+        assert(!results1.isEmpty)
+        
+        let results2 = vectorSearch.search("apple banana")
+        print("results2: \(results2)")
+        assert(results2.isEmpty)
     }
 
 }

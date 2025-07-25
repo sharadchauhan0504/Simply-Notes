@@ -25,7 +25,7 @@ struct Simply_NotesApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            VaultView()
         }
         .modelContainer(sharedModelContainer)
     }
